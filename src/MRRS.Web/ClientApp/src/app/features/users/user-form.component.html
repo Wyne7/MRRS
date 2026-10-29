@@ -1,0 +1,54 @@
+<section class="page narrow">
+  <a class="back" routerLink="/users">People</a>
+  <header class="page-head">
+    <div>
+      <p class="kicker">Directory</p>
+      <h1>{{ heading }}</h1>
+    </div>
+  </header>
+
+  <p class="status" *ngIf="loading">Loading the account…</p>
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+    <mrrs-alert [message]="error" kind="error"></mrrs-alert>
+    <label class="field">
+      <span>Username</span>
+      <input formControlName="userName" autocomplete="off" />
+      <small class="hint" *ngIf="userId">Usernames stay put after the account is created.</small>
+      <small class="field-error" *ngIf="invalid('userName')">Use 3–40 letters, numbers, dots, underscores, or hyphens.</small>
+    </label>
+    <label class="field">
+      <span>Name</span>
+      <input formControlName="displayName" maxlength="120" />
+      <small class="field-error" *ngIf="invalid('displayName')">A name is required.</small>
+    </label>
+    <label class="field">
+      <span>Email</span>
+      <input type="email" formControlName="email" />
+      <small class="field-error" *ngIf="invalid('email')">Enter a valid email. Invitations go here.</small>
+    </label>
+    <label class="field">
+      <span>Department</span>
+      <input formControlName="department" maxlength="80" />
+    </label>
+    <label class="field">
+      <span>Password</span>
+      <input type="password" formControlName="password" autocomplete="new-password" />
+      <small class="hint">{{ userId ? 'Leave blank to keep the current password.' : 'At least 8 characters, with a capital letter, a number, and a symbol.' }}</small>
+      <small class="field-error" *ngIf="invalid('password')">Set a password of at least 8 characters.</small>
+    </label>
+    <label class="field">
+      <span>Role</span>
+      <select formControlName="role">
+        <option value="Employee">Employee — book and cancel their own rooms</option>
+        <option value="Admin">Admin — rooms, people, and any reservation</option>
+      </select>
+    </label>
+    <label class="check">
+      <input type="checkbox" formControlName="isActive" /> Account can sign in
+    </label>
+    <div class="cluster">
+      <button class="btn primary" type="submit" [disabled]="saving">{{ saving ? 'Saving…' : 'Save person' }}</button>
+      <a class="btn" routerLink="/users">Cancel</a>
+    </div>
+  </form>
+</section>

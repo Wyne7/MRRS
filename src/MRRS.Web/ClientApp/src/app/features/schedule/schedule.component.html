@@ -1,0 +1,169 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <p class="kicker">Day sheet</p>
+      <h1>{{ heading }}</h1>
+    </div>
+    <div class="cluster">
+      <button type="button" class="btn" (click)="shift(-1)">Previous</button>
+      <button type="button" class="btn" (click)="goToday()">Today</button>
+      <button type="button" class="btn" (click)="shift(1)">Next</button>
+      <label class="date-jump">
+        <span class="sr">Jump to date</span>
+        <input type="date" [value]="date" (change)="onDate($event)" />
+      </label>
+      <button type="button" class="btn primary" (click)="openCreate()" [disabled]="rooms.length === 0">Reserve a room</button>
+    </div>
+  </header>
+
+  <mrrs-alert [message]="notice" kind="ok"></mrrs-alert>
+  <mrrs-alert [message]="error" kind="error"></mrrs-alert>
+  <p class="status" *ngIf="loading">Loading the day sheet…</p>
+
+  <div class="empty" *ngIf="!loading && rooms.length === 0">
+    <h2>No rooms are open</h2>
+    <p>An administrator needs to add a room before anyone can reserve one.</p>
+  </div>
+
+  <div class="legend" *ngIf="!loading && rooms.length">
+    <span><i class="swatch mine"></i> Yours</span>
+    <span><i class="swatch other"></i> Someone else</span>
+    <span class="quiet">The sheet runs 8:00 AM to 6:00 PM. Earlier and later holds are listed under the room.</span>
+  </div>
+
+  <div class="board-scroll desktop-only" *ngIf="!loading && rooms.length">
+    <div class="board">
+      <div class="gutter">
+        <div class="room-head spacer"></div>
+        <div class="gutter-body">
+          <span *ngFor="let hour of hours" [style.top]="hour.top">{{ hour.label }}</span>
+        </div>
+      </div>
+
+      <section class="room-col" *ngFor="let room of rooms">
+        <header class="room-head">
+          <h2>{{ room.name }}</h2>
+          <p>{{ room.capacity }} {{ room.capacity === 1 ? 'person' : 'people' }} · {{ where(room) }}</p>
+          <p class="chips" *ngIf="equipment(room).length">
+            <span class="chip" *ngFor="let item of equipment(room)">{{ item }}</span>
+          </p>
+          <button type="button" class="linkish" (click)="openCreate(room.id)">Book {{ room.name }}</button>
+        </header>
+        <div class="track">
+          <button
+            type="button"
+            class="block"
+            *ngFor="let booking of bookingsFor(room)"
+            [class.mine]="isMine(booking)"
+            [class.off]="!onGrid(booking)"
+            [style.top]="blockStyle(booking).top"
+            [style.height]="blockStyle(booking).height"
+            [hidden]="!onGrid(booking)"
+            (click)="openDetail(booking)">
+            <strong>{{ booking.title }}</strong>
+            <small>{{ timeRange(booking) }}</small>
+          </button>
+        </div>
+        <ul class="offsheet" *ngIf="offsheet(room).length">
+          <li *ngFor="let booking of offsheet(room)">
+            <button type="button" (click)="openDetail(booking)">{{ timeRange(booking) }} · {{ booking.title }}</button>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <div class="stack mobile-only" *ngIf="!loading && rooms.length">
+    <article class="room-card" *ngFor="let room of rooms">
+      <header>
+        <h2>{{ room.name }}</h2>
+        <p>{{ room.capacity }} {{ room.capacity === 1 ? 'person' : 'people' }} · {{ where(room) }}</p>
+      </header>
+      <p class="quiet" *ngIf="bookingsFor(room).length === 0">Nothing reserved.</p>
+      <button type="button" class="stack-item" *ngFor="let booking of bookingsFor(room)" (click)="openDetail(booking)">
+        <strong>{{ booking.title }}</strong>
+        <span>{{ timeRange(booking) }} · {{ booking.organizerName }}</span>
+      </button>
+      <button type="button" class="btn" (click)="openCreate(room.id)">Book</button>
+    </article>
+  </div>
+</section>
+
+<div class="drawer-backdrop" *ngIf="mode !== 'closed'" (click)="closeDrawer()"></div>
+<aside class="drawer" *ngIf="mode === 'create'" aria-label="Reserve a room">
+  <header class="drawer-head">
+    <p class="kicker">New reservation</p>
+    <button type="button" class="btn tiny" (click)="closeDrawer()">Close</button>
+  </header>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <mrrs-alert [message]="formError" kind="error"></mrrs-alert>
+    <label class="field">
+      <span>Room</span>
+      <select formControlName="roomId">
+        <option [ngValue]="null" disabled>Choose a room</option>
+        <option *ngFor="let room of rooms" [ngValue]="room.id">{{ room.name }} · {{ room.building }}</option>
+      </select>
+      <small class="field-error" *ngIf="invalid('roomId')">Choose a room.</small>
+    </label>
+    <label class="field">
+      <span>Date</span>
+      <input type="date" formControlName="date" />
+    </label>
+    <div class="split">
+      <label class="field">
+        <span>Start</span>
+        <select formControlName="startTime">
+          <option *ngFor="let time of times" [value]="time">{{ clockLabel(time) }}</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>End</span>
+        <select formControlName="endTime">
+          <option *ngFor="let time of times" [value]="time">{{ clockLabel(time) }}</option>
+        </select>
+      </label>
+    </div>
+    <label class="field">
+      <span>Title</span>
+      <input formControlName="title" maxlength="160" />
+      <small class="field-error" *ngIf="invalid('title')">Give the meeting a title.</small>
+    </label>
+    <label class="field">
+      <span>Notes</span>
+      <textarea formControlName="notes" maxlength="2000"></textarea>
+    </label>
+    <label class="field">
+      <span>Invite emails</span>
+      <textarea formControlName="attendeeEmails" placeholder="one@company.com, two@company.com"></textarea>
+      <small class="hint">Optional. Separate addresses with commas or new lines. You are included automatically.</small>
+    </label>
+    <button class="btn primary wide" type="submit" [disabled]="saving">{{ saving ? 'Saving…' : 'Reserve' }}</button>
+  </form>
+</aside>
+
+<aside class="drawer" *ngIf="mode === 'detail' && selected as booking" aria-label="Reservation">
+  <header class="drawer-head">
+    <p class="kicker">Reservation</p>
+    <button type="button" class="btn tiny" (click)="closeDrawer()">Close</button>
+  </header>
+  <h2>{{ booking.title }}</h2>
+  <dl class="meta">
+    <div><dt>When</dt><dd>{{ timeRange(booking) }}</dd></div>
+    <div><dt>Where</dt><dd>{{ booking.roomName }} · {{ booking.building }} · Floor {{ booking.floor }}</dd></div>
+    <div><dt>Organizer</dt><dd>{{ booking.organizerName }}</dd></div>
+    <div *ngIf="booking.notes"><dt>Notes</dt><dd>{{ booking.notes }}</dd></div>
+    <div *ngIf="booking.attendeeEmails"><dt>Invited</dt><dd>{{ booking.attendeeEmails }}</dd></div>
+  </dl>
+  <mrrs-alert [message]="formError" kind="error"></mrrs-alert>
+  <div *ngIf="booking.canCancel && !confirming">
+    <button type="button" class="btn danger" (click)="confirming = true">Cancel reservation</button>
+  </div>
+  <div *ngIf="booking.canCancel && confirming" class="confirm">
+    <p>Cancel this hold? The room opens up again. A cancellation note is sent when SMTP is configured.</p>
+    <div class="cluster">
+      <button type="button" class="btn" (click)="confirming = false">Keep it</button>
+      <button type="button" class="btn danger" (click)="cancelSelected()" [disabled]="saving">{{ saving ? 'Cancelling…' : 'Cancel reservation' }}</button>
+    </div>
+  </div>
+  <p class="quiet" *ngIf="!booking.canCancel">Only the organizer or an administrator can cancel a reservation that has not ended.</p>
+</aside>

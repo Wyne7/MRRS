@@ -1,0 +1,33 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <p class="kicker">Inventory</p>
+      <h1>Rooms</h1>
+    </div>
+    <a class="btn primary" routerLink="/rooms/new">Add a room</a>
+  </header>
+
+  <mrrs-alert [message]="error" kind="error"></mrrs-alert>
+  <p class="status" *ngIf="loading">Loading rooms…</p>
+
+  <div class="empty" *ngIf="!loading && rooms.length === 0">
+    <h2>No rooms yet</h2>
+    <p>Add the first room so people can hold it on the day sheet.</p>
+  </div>
+
+  <div class="card-grid" *ngIf="!loading && rooms.length">
+    <article class="info-card" *ngFor="let room of rooms" [class.closed]="!room.isActive">
+      <header>
+        <h2>{{ room.name }}</h2>
+        <span class="pill" [class.muted]="!room.isActive">{{ room.isActive ? 'Open' : 'Closed' }}</span>
+      </header>
+      <p>{{ room.capacity }} {{ room.capacity === 1 ? 'person' : 'people' }}</p>
+      <p>{{ where(room) }}</p>
+      <p class="chips" *ngIf="equipment(room).length">
+        <span class="chip" *ngFor="let item of equipment(room)">{{ item }}</span>
+      </p>
+      <p class="quiet" *ngIf="room.avNotes">{{ room.avNotes }}</p>
+      <a class="btn tiny" [routerLink]="['/rooms', room.id]">Edit</a>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,72 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <p class="kicker">Yours</p>
+      <h1>My reservations</h1>
+    </div>
+  </header>
+
+  <mrrs-alert [message]="notice" kind="ok"></mrrs-alert>
+  <mrrs-alert [message]="error" kind="error"></mrrs-alert>
+  <p class="status" *ngIf="loading">Loading your reservations…</p>
+
+  <div class="empty" *ngIf="!loading && bookings.length === 0">
+    <h2>No reservations yet</h2>
+    <p>The day sheet is where a room gets held.</p>
+    <a class="btn primary" routerLink="/schedule">Open the day sheet</a>
+  </div>
+
+  <section *ngIf="!loading && upcoming.length">
+    <h2>Upcoming</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Room</th>
+            <th>Title</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let booking of upcoming">
+            <td>{{ when(booking) }}</td>
+            <td>{{ booking.roomName }}</td>
+            <td>{{ booking.title }}</td>
+            <td class="actions">
+              <button *ngIf="booking.canCancel && pendingId !== booking.id" type="button" class="btn tiny danger" (click)="ask(booking)">Cancel</button>
+              <span *ngIf="pendingId === booking.id" class="cluster">
+                <button type="button" class="btn tiny" (click)="dismiss()">Keep</button>
+                <button type="button" class="btn tiny danger" (click)="cancel(booking)" [disabled]="saving">Confirm</button>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section *ngIf="!loading && history.length">
+    <h2>Earlier</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Room</th>
+            <th>Title</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let booking of history">
+            <td>{{ when(booking) }}</td>
+            <td>{{ booking.roomName }}</td>
+            <td>{{ booking.title }}</td>
+            <td><span class="pill" [class.muted]="booking.status === 'Cancelled'">{{ booking.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

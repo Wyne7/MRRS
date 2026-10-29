@@ -1,0 +1,24 @@
+<div class="shell">
+  <aside class="nav">
+    <a class="brand" routerLink="/schedule">
+      <span class="mark">MRRS</span>
+      <span class="sub">Meeting rooms</span>
+    </a>
+    <nav>
+      <a routerLink="/schedule" routerLinkActive="active">Day sheet</a>
+      <a routerLink="/mine" routerLinkActive="active">My reservations</a>
+      <ng-container *ngIf="user$ | async as user">
+        <a *ngIf="isAdmin(user)" routerLink="/rooms" routerLinkActive="active">Rooms</a>
+        <a *ngIf="isAdmin(user)" routerLink="/users" routerLinkActive="active">People</a>
+      </ng-container>
+    </nav>
+    <div class="who" *ngIf="user$ | async as user">
+      <strong>{{ user.displayName }}</strong>
+      <span>{{ roleLabel(user) }}<ng-container *ngIf="user.department"> · {{ user.department }}</ng-container></span>
+      <button type="button" class="btn tiny" (click)="signOut()">Sign out</button>
+    </div>
+  </aside>
+  <main class="workspace">
+    <router-outlet></router-outlet>
+  </main>
+</div>

@@ -1,0 +1,58 @@
+<section class="page narrow">
+  <a class="back" routerLink="/rooms">Rooms</a>
+  <header class="page-head">
+    <div>
+      <p class="kicker">Inventory</p>
+      <h1>{{ heading }}</h1>
+    </div>
+  </header>
+
+  <p class="status" *ngIf="loading">Loading the room…</p>
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()">
+    <mrrs-alert [message]="error" kind="error"></mrrs-alert>
+    <label class="field">
+      <span>Name</span>
+      <input formControlName="name" maxlength="120" />
+      <small class="field-error" *ngIf="invalid('name')">A room needs a name.</small>
+    </label>
+    <div class="split">
+      <label class="field">
+        <span>Building</span>
+        <input formControlName="building" maxlength="80" />
+        <small class="field-error" *ngIf="invalid('building')">Name the building.</small>
+      </label>
+      <label class="field">
+        <span>Floor</span>
+        <input formControlName="floor" maxlength="40" />
+        <small class="field-error" *ngIf="invalid('floor')">Name the floor.</small>
+      </label>
+    </div>
+    <label class="field">
+      <span>Location detail</span>
+      <input formControlName="locationDetail" maxlength="200" placeholder="East wing, room 214" />
+    </label>
+    <label class="field">
+      <span>Capacity</span>
+      <input type="number" formControlName="capacity" min="1" max="500" />
+      <small class="field-error" *ngIf="invalid('capacity')">Capacity must be between 1 and 500.</small>
+    </label>
+    <fieldset class="checks">
+      <legend>Equipment</legend>
+      <label class="check"><input type="checkbox" formControlName="hasProjector" /> Projector</label>
+      <label class="check"><input type="checkbox" formControlName="hasVideoConference" /> Video conference</label>
+      <label class="check"><input type="checkbox" formControlName="hasWhiteboard" /> Whiteboard</label>
+      <label class="check"><input type="checkbox" formControlName="hasConferencePhone" /> Conference phone</label>
+    </fieldset>
+    <label class="field">
+      <span>AV notes</span>
+      <textarea formControlName="avNotes" maxlength="1000"></textarea>
+    </label>
+    <label class="check">
+      <input type="checkbox" formControlName="isActive" /> Open for booking
+    </label>
+    <div class="cluster">
+      <button class="btn primary" type="submit" [disabled]="saving">{{ saving ? 'Saving…' : 'Save room' }}</button>
+      <a class="btn" routerLink="/rooms">Cancel</a>
+    </div>
+  </form>
+</section>

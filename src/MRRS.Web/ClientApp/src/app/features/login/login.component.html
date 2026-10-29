@@ -1,0 +1,39 @@
+<div class="login">
+  <section class="pitch">
+    <div>
+      <p class="mark">MRRS</p>
+      <h1>Reserve the room, not the hallway.</h1>
+    </div>
+    <p class="lede">The meeting room desk for this organization. See who has the floor, hold a room, and send the invitation from the same place.</p>
+  </section>
+
+  <section class="panel">
+    <form class="card" [formGroup]="form" (ngSubmit)="submit()">
+      <p class="kicker">Sign in</p>
+      <h2>Your desk</h2>
+      <mrrs-alert [message]="error" kind="error"></mrrs-alert>
+
+      <label class="field">
+        <span>Username or email</span>
+        <input formControlName="userName" autocomplete="username" />
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" formControlName="password" autocomplete="current-password" />
+      </label>
+
+      <button class="btn primary wide" type="submit" [disabled]="saving">
+        {{ saving ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    <details class="seed">
+      <summary>Local seed accounts</summary>
+      <p>These accounts are created the first time the database migrates. Change them before any shared deployment.</p>
+      <dl>
+        <div><dt>Admin</dt><dd>admin · Admin123!</dd></div>
+        <div><dt>Employee</dt><dd>employee · Employee123!</dd></div>
+      </dl>
+    </details>
+  </section>
+</div>
